@@ -1,0 +1,13 @@
+
+Hello World! 12345
+hello %
+percent sign check %
+char y
+hello world
+3
+11 becomes 0xb in hexadecimal
+2 becomes 0b10 in binary
+money = $7.65
+%z
+12 abc
+-$8.74

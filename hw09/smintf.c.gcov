@@ -1,0 +1,247 @@
+        -:    0:Source:smintf.c
+        -:    0:Graph:smintf.gcno
+        -:    0:Data:smintf.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:#include <stdio.h>
+        -:    2:#include <stdlib.h>
+        -:    3:#include <stdarg.h>
+        -:    4:#include <stdio.h>
+        -:    5:#include "smintf.h"
+        -:    6:
+       24:    7:int _count_strlen(const char *str) {
+       24:    8:int length = 0;
+      126:    9:for(int i=0; str[i]!='\0'; i++)
+        -:   10:    {
+      102:   11:        length++; //Counting the length.
+        -:   12:    }
+       24:   13:return length;
+        -:   14:
+        -:   15:}
+        -:   16:
+       24:   17:char* smintf(const char *format, ...){
+        -:   18:	va_list more_args;
+       24:   19:	va_start(more_args,format);
+        -:   20:	
+        -:   21://	int length = 0;
+        -:   22:	char char_arg;
+        -:   23:	char *str_arg;
+       24:   24:	int strlen = _count_strlen(format);
+        -:   25:/*	for (int i = 0; i < strlen; i++) {
+        -:   26:		if (format[i] == '%') {
+        -:   27:			if (i + 1 == strlen) {
+        -:   28:				length++;
+        -:   29:			}
+        -:   30:			else {
+        -:   31:				switch(format[i + 1]) {
+        -:   32:					case 'c': {
+        -:   33:						char_arg = va_arg(more_args, int);
+        -:   34:						length++;
+        -:   35:						break;
+        -:   36:					} 	
+        -:   37:					case 's': {
+        -:   38:						str_arg = va_arg(more_args, char*);
+        -:   39:						length += _count_strlen(str_arg);
+        -:   40:						break;
+        -:   41:					}	
+        -:   42:					case '%': {
+        -:   43:						length++;
+        -:   44:						break;
+        -:   45:					}
+        -:   46:					default: {
+        -:   47:						length++;
+        -:   48:					} 
+        -:   49:				}					
+        -:   50:			}	
+        -:   51:
+        -:   52:			
+        -:   53:		}
+        -:   54:	} */
+       24:   55:	char* cop = (char*) malloc(sizeof(char) * 500);
+       24:   56:	int count = 0;
+       24:   57:	if (cop != NULL) {
+        -:   58:	
+      129:   59:	for (int i = 0; i <= strlen; i++) {
+      105:   60:		if (format[i] == '%') {
+       24:   61:			switch(format[i + 1]) {
+        4:   62:				case 'c': {
+        -:   63:
+        4:   64:						char_arg = va_arg(more_args, int);
+        4:   65:					cop[count] = char_arg;
+        4:   66:					i = i + 1;
+        4:   67:					count++;
+        4:   68:					break;
+        -:   69:				} 
+        1:   70:				case 's': {
+        -:   71:
+        1:   72:						str_arg = va_arg(more_args, char*);
+        6:   73:					for (int j = 0; str_arg[j] != '\0'; j++) {
+        5:   74:						cop[count] = str_arg[j];
+        5:   75:						count++;
+        -:   76:					}
+        1:   77:					i = i + 1;
+        1:   78:					break;
+        -:   79:				}
+        4:   80:				case 'd': {
+        4:   81:					int int_arg = va_arg(more_args, int);
+        -:   82:					unsigned int num;
+        4:   83:					if (int_arg < 0) {
+        1:   84:						cop[count] = '-';
+        1:   85:						count++;
+        1:   86:						num = -int_arg;
+        -:   87:					}
+        -:   88:					else {
+        3:   89:						num = int_arg;
+        -:   90:					}
+        -:   91:					int digit;
+        4:   92:					int divisor = 1;
+       14:   93:					while (divisor <= (num / 10)) {
+       10:   94:						divisor = divisor * 10;
+        -:   95:					}
+       18:   96:					while (divisor > 0) {
+       14:   97:        				digit = num / divisor;
+       14:   98:        				num = num % divisor;
+       14:   99:        				divisor = divisor / 10;
+       14:  100:        			  	cop[count] = '0' + digit;
+       14:  101:						count++;
+        -:  102:					}
+        4:  103:					i = i + 1;
+        4:  104:					break;
+        -:  105:				}
+        4:  106:				case 'x': {
+        4:  107:					int int_arg = va_arg(more_args, int);
+        -:  108:					unsigned int num;
+        4:  109:					if (int_arg < 0) {
+        2:  110:						cop[count] = '-';
+        2:  111:						count++;
+        2:  112:						num = -int_arg;
+        -:  113:					}
+        -:  114:					else {
+        2:  115:						num = int_arg;
+        -:  116:					}
+        4:  117:					cop[count] = '0';
+        4:  118:					count++;
+        4:  119:					cop[count] = 'x';
+        4:  120:					count++;
+        4:  121:					int digit = 0;
+        4:  122:					int divisor = 1;
+        6:  123:					while (divisor <= (num / 16)) {
+        2:  124:						divisor = divisor * 16;
+        -:  125:					}
+       10:  126:					while (divisor > 0) {
+        6:  127:        				digit = num / divisor;
+        6:  128:        				num = num % divisor;
+        6:  129:        				divisor = divisor / 16;
+        6:  130:        				if (digit < 10) {
+        4:  131:				        	cop[count] = '0' + digit;
+        4:  132:							count++;
+        -:  133:				        }
+        -:  134:				        else {
+        2:  135:							cop[count] = 'a' + digit - 10;
+        2:  136:							count++;
+        -:  137:	   					}
+        -:  138:					}
+        4:  139:					i = i + 1;
+        4:  140:					break;
+        -:  141:				}
+        2:  142:				case 'b': {
+        2:  143:					int int_arg = va_arg(more_args, int);
+        -:  144:					unsigned int num;
+        2:  145:					if (int_arg < 0) {
+        1:  146:						cop[count] = '-';
+        1:  147:						count++;
+        1:  148:						num = -int_arg;
+        -:  149:					}
+        -:  150:					else {
+        1:  151:						num = int_arg;
+        -:  152:					}
+        2:  153:					cop[count] = '0';
+        2:  154:					count++;
+        2:  155:					cop[count] = 'b';
+        2:  156:					count++;
+        2:  157:					int digit = 0;
+        2:  158:					int divisor = 1;
+        4:  159:					while (divisor <= (num / 2)) {
+        2:  160:						divisor = divisor * 2;
+        -:  161:					}
+        6:  162:					while (divisor > 0) {
+        4:  163:        				digit = num / divisor;
+        4:  164:        				num = num % divisor;
+        4:  165:        				divisor = divisor / 2;
+        4:  166:        				cop[count] = '0' + digit;
+        4:  167:						count++;
+        -:  168:					}
+        2:  169:					i = i + 1;
+        2:  170:					break; 
+        -:  171:				}
+        5:  172:				case '$': {
+        5:  173:					int int_arg = va_arg(more_args, int);
+        -:  174:					unsigned int num;
+        -:  175:					unsigned int check;
+        5:  176:    				if (int_arg < 0) {
+        2:  177:				        cop[count] = '-';
+        2:  178:						count++;
+        2:  179:				    	num = -int_arg;
+        2:  180:						check = -int_arg;
+        -:  181:    				}
+        -:  182:				    else {
+        3:  183:					    num = int_arg;
+        3:  184:						check = int_arg;
+        -:  185:    				}
+        5:  186:					cop[count] = '$';
+        5:  187:					count++;
+        5:  188:					int divisor = 1;
+       13:  189:    				while (divisor <= num / 10) {
+        8:  190:					    divisor = divisor * 10;
+        -:  191:    				}
+        5:  192:					if ((num % 10) == num ) {
+        2:  193:						cop[count] = '0';
+        2:  194:						count++;
+        2:  195:						cop[count] = '.';
+        2:  196:						count++;
+        2:  197:						cop[count] = '0';
+        2:  198:						count++;
+        -:  199:					}
+        -:  200:				    int digit;
+       18:  201:				    while (divisor > 0) {
+       13:  202:				        digit = num / divisor;
+       13:  203:        				num = num % divisor;
+       13:  204:						if (divisor == 10) {
+        3:  205:							if (check < 100) {
+        1:  206:								cop[count] = '0';
+        1:  207:								count++;
+        -:  208:							}
+        3:  209:							cop[count] = '.';
+        3:  210:							count++;
+        -:  211:						}
+       13:  212:        				divisor = divisor / 10;
+       13:  213:				        cop[count] = '0' + digit;
+       13:  214:						count++;
+        -:  215:					}
+        5:  216:					i = i + 1;
+        5:  217:					break;
+        -:  218:				}
+        1:  219:				case '%': {
+        1:  220:					cop[count] = '%';
+        1:  221:					i = i + 1;
+        1:  222:					count++;
+        1:  223:					break;
+        -:  224:				}
+        3:  225:				default: {
+        3:  226:					cop[count] = format[i];
+        3:  227:					count++;
+        -:  228:				} 
+        -:  229:			}
+        -:  230:		}
+        -:  231:		else {
+       81:  232:			cop[count] = format[i];
+       81:  233:			count++;
+        -:  234:		}
+        -:  235:	}
+        -:  236:
+       24:  237:cop[count] = '\0';
+        -:  238:	}
+       24:  239:va_end(more_args);
+       24:  240:return cop;
+        -:  241:
+        -:  242:}

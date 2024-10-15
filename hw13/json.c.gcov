@@ -1,0 +1,341 @@
+        -:    0:Source:json.c
+        -:    0:Graph:json.gcno
+        -:    0:Data:json.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:#include <stdio.h>
+        -:    2:#include <stdlib.h>
+        -:    3:#include <stdbool.h>
+        -:    4:#include <ctype.h>
+        -:    5:#include <assert.h>
+        -:    6:#include "clog.h"
+        -:    7:#include "json.h"
+        -:    8:
+        -:    9:
+        -:   10:#include <stdio.h>
+        -:   11:#include <stdlib.h>
+        -:   12:#include <ctype.h>
+        -:   13:
+        -:   14:// Helper function to free the linked list
+        5:   15:void _free_list(Node* head) {
+       12:   16:    while (head) {
+        7:   17:        Node* temp = head;
+        7:   18:        head = head->next;
+        7:   19:        free_element(temp->element);
+        -:   20:        
+        -:   21:    }
+        5:   22:}
+        -:   23:
+        9:   24:bool parse_list(Node** a_head, const char** a_pos) {
+        -:   25:    /*if (a_head == NULL || a_pos == NULL || *a_pos == NULL) {
+        -:   26:        return false; // Invalid input arguments
+        -:   27:    }*/
+        9:   28:	printf("in");
+        9:   29:    const char* pos = *a_pos;
+        -:   30:
+        -:   31:    // Eat whitespace
+       10:   32:    while (isspace(*pos)) {
+        1:   33:        pos++;
+        -:   34:    }
+        -:   35:
+        -:   36:    // Check for the start of the list '['
+        9:   37:    if (*pos != '[') {
+        1:   38:        return false;
+        -:   39:    }
+        8:   40:    pos++; // Move to the next character after '['
+        -:   41:
+        -:   42:    // Create the head of the linked list
+        8:   43:    *a_head = NULL;
+        8:   44: if (*pos == ']') {
+        1:   45:        pos++; // Move to the next character after ']'
+        -:   46:		//printf("%p\n", pos);
+        1:   47:		*a_pos = pos;
+        1:   48:        return true; // Successfully parsed the list
+        -:   49:    }
+        -:   50:    // Keep track of the previous node to link elements in the linked list
+        7:   51:    Node* prevNode = NULL;
+        -:   52:
+        -:   53:    // Parse elements in the list (if any)
+       17:   54:    while (*pos != '\0') {
+        -:   55:        Element element;
+        -:   56:
+        -:   57:        // Parse the current element
+       15:   58:        if (!parse_element(&element, &pos)) {
+        -:   59:            // Free any allocated memory if parsing fails
+        -:   60:			
+        2:   61:             _free_list(*a_head);
+        -:   62://            free_list(*a_head);
+        2:   63:			*a_pos = pos;
+        2:   64:			printf("hel");
+        5:   65:            return false;
+        -:   66:        }
+        -:   67:
+        -:   68:        // Create a new node for the element
+       13:   69:        Node* newNode = (Node*)malloc(sizeof(Node));
+      13*:   70:        assert(newNode != NULL);
+        -:   71:
+       13:   72:        newNode->element = element;
+       13:   73:        newNode->next = NULL;
+        -:   74:
+        -:   75:        // Link the node to the linked list
+       13:   76:        if (*a_head == NULL) {
+        6:   77:            *a_head = newNode; // Set the head of the linked list
+        -:   78:        } else {
+        7:   79:            prevNode->next = newNode;
+        -:   80:        }
+        -:   81:
+       13:   82:        prevNode = newNode;
+        -:   83:
+        -:   84:        // Eat whitespace
+        -:   85:    /*    while (isspace(*pos)) {
+        -:   86:            pos++;
+        -:   87:        }*/
+        -:   88:
+        -:   89:        // Check for the end of the list ']'
+       13:   90:        if (*pos == ']') {
+        3:   91:            pos++; // Move to the next character after ']'
+        3:   92:			*a_pos = pos;
+        3:   93:            return true; // Successfully parsed the list
+        -:   94:        }
+        -:   95:
+        -:   96:        // Check for the list element separator ','
+       10:   97:        if (*pos == ',') {
+        7:   98:            pos++; // Move to the next character after ','
+        -:   99:        } else {
+        -:  100:            // Invalid list syntax (unexpected character)
+        -:  101://			free_element(element);
+        3:  102:             _free_list(*a_head);
+        3:  103:			*a_pos = pos;
+        -:  104://            return false;
+        -:  105://            break;
+        -:  106:        }
+        -:  107:    }
+        -:  108:
+        -:  109:    // If we reach here, the end of the string was reached before finding ']'
+        -:  110:    //free_list(*a_head);
+        -:  111:/*	*a_pos = pos;
+        -:  112:	printf("he", *a_pos);*/
+        -:  113:	//free_element(element);
+        2:  114:	printf("\nhl\n");
+        2:  115:    return false;
+        -:  116:}
+        -:  117:	
+        -:  118:
+        -:  119:
+        -:  120:
+        -:  121:
+        -:  122:
+       14:  123:bool parse_int(int* a_value, char const** a_pos) {
+        -:  124:/*    if (a_value == NULL || a_pos == NULL || *a_pos == NULL) {
+        -:  125:return false;  // Invalid input
+        -:  126:    }*/
+        -:  127:
+       14:  128:   const char* pos = *a_pos;
+       14:  129:    bool negative = false;
+        -:  130:
+       14:  131:    if (*pos == '-') {
+        4:  132:        negative = true;
+        4:  133:        pos++;
+        -:  134: 
+        -:  135:    }
+        -:  136:
+       14:  137:    int result = 0;
+       14:  138:    bool valid = true;
+       14:  139:	bool ch = false;
+        -:  140:
+       57:  141:    while (valid) {
+       43:  142:		if (*pos >= '0' && *pos <= '9') {
+        -:  143:
+       29:  144:			valid = true;
+       29:  145:        	result = (result * 10) + (*pos - '0');
+        -:  146:
+       29:  147:        	pos++;
+       29:  148:			ch = true;
+        -:  149:
+        -:  150:		}
+        -:  151:		else {
+        -:  152:				
+       14:  153:			valid = false;
+        -:  154:		}
+        -:  155:		//pos = pos + 1;
+        -:  156:    }
+        -:  157:
+        -:  158:
+       14:  159:    if (ch) {
+        -:  160:		
+        -:  161:
+       12:  162:        *a_value = negative ? -result : result;
+       12:  163:        *a_pos = pos;
+        -:  164:
+       12:  165:        return true;
+        -:  166:    } else {
+        2:  167:		*a_pos = pos;	
+        -:  168:		
+        -:  169:
+        2:  170:        return false;
+        -:  171:    }
+        -:  172:/*if (a_value == NULL || a_pos == NULL || *a_pos == NULL || **a_pos == '\0') {
+        -:  173:        return false; // Invalid input arguments
+        -:  174:    }
+        -:  175:
+        -:  176:    const char* pos = *a_pos;
+        -:  177:    int sign = 1;
+        -:  178:
+        -:  179:    // Handle the sign (if present)
+        -:  180:    if (*pos == '-') {
+        -:  181:        sign = -1;
+        -:  182:        pos++;
+        -:  183:    } else if (*pos == '+') {
+        -:  184:        pos++;
+        -:  185:    }
+        -:  186:
+        -:  187:    // Parse the integer value
+        -:  188:    int result = 0;
+        -:  189:    while (*pos >= '0' && *pos <= '9') {
+        -:  190:        result = result * 10 + (*pos - '0');
+        -:  191:        pos++;
+        -:  192:    }
+        -:  193:
+        -:  194:    // Check if there was at least one digit
+        -:  195:    if (pos == *a_pos) {
+        -:  196:        return false; // No valid integer literal found
+        -:  197:    }
+        -:  198:
+        -:  199:    // Update output arguments
+        -:  200:    *a_value = result * sign;
+        -:  201:    *a_pos = pos;
+        -:  202:
+        -:  203:    return true;*/
+        -:  204:}
+        -:  205:
+        -:  206:
+        6:  207:bool parse_string(char** a_string, const char** a_pos) {
+        6:  208:    if (**a_pos != '"') {
+        1:  209:        return false;
+        -:  210:    } 
+        5:  211:	(*a_pos)++;
+        -:  212:
+        -:  213:
+        5:  214:    const char* end_pos = *a_pos;
+       23:  215:    while (*end_pos != '"' && *end_pos != '\0' && *end_pos != '\n') {
+       18:  216:        end_pos++;
+        -:  217:    }
+        5:  218:   if (*end_pos != '"') {
+        -:  219:
+        1:  220:		*a_pos = end_pos;
+        -:  221:
+        1:  222:       return false;
+        -:  223:	}
+        -:  224:
+        4:  225:    size_t length = end_pos - *a_pos;
+        -:  226:
+        4:  227:    *a_string = (char*)malloc((length + 1) * sizeof(char));
+       4*:  228:    assert(*a_string != NULL);
+       19:  229:    for (size_t i = 0; i < length; i++) {
+       15:  230:        (*a_string)[i] = (*a_pos)[i];
+        -:  231:    }
+        4:  232:    (*a_string)[length] = '\0';
+        -:  233:
+        4:  234:    *a_pos = end_pos + 1;
+        4:  235:    return true;
+        -:  236:}
+        -:  237:
+        -:  238:
+        -:  239:
+        -:  240:
+       25:  241:bool parse_element(Element* a_element, char const** a_pos) {
+        -:  242:/*
+        -:  243:	
+        -:  244:	while (isspace(**a_pos))	{
+        -:  245:		(*a_pos) = (*a_pos) + 1;
+        -:  246:		
+        -:  247:	}
+        -:  248:	
+        -:  249:
+        -:  250:	if ((isdigit(**a_pos)) || (**a_pos == '-')) {
+        -:  251:		a_element->type = ELEMENT_INT;
+        -:  252:
+        -:  253:
+        -:  254:		return parse_int(&(a_element->as_int), a_pos);
+        -:  255:		
+        -:  256:	}
+        -:  257:	else if (**a_pos == '"') {
+        -:  258:		a_element->type = ELEMENT_STRING;
+        -:  259:		return parse_string(&(a_element->as_string), a_pos);
+        -:  260:	}
+        -:  261:	else {
+        -:  262:		return false;
+        -:  263:	}*/
+        -:  264:
+        -:  265:/*if (a_element == NULL || a_pos == NULL || *a_pos == NULL) {
+        -:  266:        return false; // Invalid input arguments
+        -:  267:    }*/
+        -:  268:
+        -:  269:    // Eat whitespace
+       31:  270:    while (isspace(**a_pos)) {
+        6:  271:        (*a_pos)++;
+        -:  272:    }
+        -:  273:
+        -:  274:    // Check the type of the element based on the next character
+       25:  275:    if (isdigit(**a_pos) || **a_pos == '-') {
+       10:  276:        a_element->type = ELEMENT_INT;
+       10:  277:        return parse_int(&(a_element->as_int), a_pos);
+       15:  278:    } else if (**a_pos == '"') {
+        5:  279:        a_element->type = ELEMENT_STRING;
+        5:  280:        return parse_string(&(a_element->as_string), a_pos);
+       10:  281:    } else if (**a_pos == '[') {
+        7:  282:        a_element->type = ELEMENT_LIST;
+        7:  283:		printf("in");
+        7:  284:        return parse_list(&(a_element->as_list), a_pos);
+        -:  285:    }
+        3:  286:	printf("false");
+        -:  287:
+        -:  288:    // If none of the above conditions match, it's an invalid element
+        3:  289:    return false;
+        -:  290:}
+        -:  291:
+        3:  292:void print_list(Node* head) {
+        3:  293:    Node* current = head;
+        8:  294:    while (current != NULL) {
+        5:  295:        print_element(current->element);
+        5:  296:        if (current->next != NULL) {
+        3:  297:            printf(", ");
+        -:  298:        }
+        5:  299:        current = current->next;
+        -:  300:    }
+        3:  301:}
+        -:  302:
+       10:  303:void print_element(Element element) {
+       10:  304:    switch (element.type) {
+        4:  305:        case ELEMENT_INT:
+        4:  306:            printf("%d", element.as_int);
+        4:  307:            break;
+        3:  308:		case ELEMENT_STRING:
+        3:  309:            printf("\"%s\"", element.as_string);
+        3:  310:            break;
+        3:  311:        case ELEMENT_LIST:
+        3:  312:            printf("[");
+        3:  313:            print_list(element.as_list);
+        3:  314:            printf("]");
+        3:  315:            break;
+        -:  316:    }
+       10:  317:}
+        -:  318:
+       19:  319:void free_element(Element element) {
+       19:  320:    switch (element.type) {
+        4:  321:        case ELEMENT_STRING:
+        4:  322:            free(element.as_string);
+        4:  323:            break;
+        4:  324:        case ELEMENT_LIST: {
+       11:  325:          while (element.as_list) {
+        7:  326:                Node* temp = element.as_list;
+        7:  327:                element.as_list = element.as_list->next;
+        7:  328:                free_element(temp->element);
+        7:  329:                free(temp);
+        -:  330:            } 
+        -:  331:        }
+        -:  332:       default :
+       15:  333:			break;
+        -:  334:    }
+       19:  335:}
+        -:  336:

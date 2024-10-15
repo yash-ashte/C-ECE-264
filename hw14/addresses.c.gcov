@@ -1,0 +1,192 @@
+        -:    0:Source:addresses.c
+        -:    0:Graph:addresses.gcno
+        -:    0:Data:addresses.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:#include <stdlib.h>
+        -:    2:#include <stdbool.h>
+        -:    3:#include <assert.h>
+        -:    4:#include "clog.h"
+        -:    5:#include "addresses.h"
+        -:    6:
+        -:    7:
+        -:    8:/*ze_t num_chars = strlen(src_string);
+        -:    9:    char* dst_string = malloc(sizeof(*dst_string) * (num_chars + 1));
+        -:   10:    return strcpy(dst_string, src_string);
+        -:   11:}
+        -:   12:
+        -:   13:int _int_cmp(const void* p1, const void* p2) {
+        -:   14:   const int* a_n1 = p1;
+        -:   15:   const int* a_n2 = p2;
+        -:   16:   return *a_n1 - *a_n2;
+        -:   17:}
+        -:   18:
+        -:   19:int _string_cmp(const void* p1, const void* p2) {
+        -:   20:   const char* str1 = p1;
+        -:   21:   const char* str2 = p2;
+        -:   22:   return strcmp(str1, str2);
+        -:   23:}
+        -:   24:
+        -:   25:int _string_length_cmp(const void* p1, const void* p2) {
+        -:   26:   const char* str1 = p1;
+        -:   27:   const char* str2 = p2;
+        -:   28:   return strlen(str1) - strlen(str2);
+        -:   29:}*/
+        -:   30:
+        8:   31:void bst_insert(BSTNode** a_root, void* a_value, int (*cmp_fn)(const void*, const void*))
+        -:   32:{
+       8*:   33:    assert(a_root != NULL);
+        8:   34:    if (*a_root == NULL) {
+        4:   35:        BSTNode* new_node = (BSTNode*)malloc(sizeof(BSTNode));
+       4*:   36:        assert(new_node != NULL);
+        4:   37:        new_node->a_value = a_value;
+        4:   38:        new_node->left = NULL;
+        4:   39:        new_node->right = NULL;
+        4:   40:        *a_root = new_node;
+        4:   41:        return;
+        -:   42:    }
+        4:   43:    int cmp_result = cmp_fn(a_value, (*a_root)->a_value);
+        4:   44:    if (cmp_result < 0) {
+        3:   45:	    bst_insert(&((*a_root)->left), a_value, cmp_fn);
+        -:   46:    } else {
+        1:   47:        bst_insert(&((*a_root)->right), a_value, cmp_fn);
+        -:   48:    }
+        -:   49:}
+        -:   50:
+        9:   51:void print_tree(BSTNode* root, void (*print_fn)(const void*))
+        -:   52:{
+        9:   53:    if (root != NULL) {
+        4:   54:        print_tree(root->left, print_fn);
+        4:   55:        print_fn(root->a_value);
+        4:   56:		printf("\n");
+        4:   57:        print_tree(root->right, print_fn);
+        -:   58:    }
+        9:   59:	return;
+        -:   60:}
+        -:   61:
+        5:   62:void destroy_tree(BSTNode** a_root, void (*destroy_fn)(void*))
+        -:   63:{
+        5:   64:    if (*a_root == NULL) {
+        1:   65:        return;
+        -:   66:    }
+        4:   67:	if ((*a_root)->left != NULL) {
+        2:   68:    	destroy_tree(&((*a_root)->left), destroy_fn);
+        -:   69:	}
+        -:   70:	 
+        4:   71:	if ((*a_root)->right != NULL) {
+        1:   72:    	destroy_tree(&((*a_root)->right), destroy_fn);
+        -:   73:	}
+        4:   74:    destroy_fn(*a_root);
+        4:   75:    *a_root = NULL;
+        -:   76:}
+        -:   77:
+        2:   78:Node* pq_dequeue(Node** a_head)
+        -:   79:{
+        2:   80:    if (a_head == NULL || *a_head == NULL) {
+        1:   81:        return NULL;
+        -:   82:    }
+        1:   83:    Node* removed_node = *a_head;
+        1:   84:    *a_head = (*a_head)->next;
+        1:   85:    removed_node->next = NULL;
+        1:   86:    return removed_node;
+        -:   87:}
+        -:   88:
+        8:   89:void pq_enqueue(Node** a_head, void* a_value, int (*cmp_fn)(const void*, const void*))
+        -:   90:{
+       8*:   91:    assert(a_head != NULL);
+        -:   92:
+        8:   93:    Node* new_node = (Node*)malloc(sizeof(Node));
+       8*:   94:	assert(new_node != NULL);
+        8:   95:    new_node->a_value = a_value;
+        8:   96:    if ((*a_head == NULL) || (cmp_fn(a_value, (*a_head)->a_value) < 0)) {
+        6:   97:        new_node->next = *a_head;
+        6:   98:        *a_head = new_node;
+        6:   99:        return;
+        -:  100:    }
+        2:  101:    Node* current = *a_head;
+        4:  102:    while ((current->next != NULL) && (cmp_fn(a_value, current->next->a_value) >= 0)) {
+        2:  103:        current = current->next;
+        -:  104:    }
+        2:  105:    new_node->next = current->next;
+        2:  106:    current->next = new_node;
+        -:  107:}
+        -:  108:
+        6:  109:void stack_push(Node** a_top, void* a_value)
+        -:  110:{
+       6*:  111:    assert(a_top != NULL);
+        6:  112:    Node* new_node = (Node*)malloc(sizeof(Node));
+       6*:  113:	assert(new_node != NULL);
+        -:  114://	printf("check %s\n", (char*) a_value);
+        6:  115:    new_node->a_value = a_value;
+        -:  116://	printf("in - %s\n", (char*)a_value);
+        6:  117:    new_node->next = *a_top;
+        6:  118:    *a_top = new_node;
+        -:  119://	printf("end\n");
+        6:  120:}
+        -:  121:
+        2:  122:Node* stack_pop(Node** stack)
+        -:  123:{
+        2:  124:    if (stack == NULL || *stack == NULL) {
+        1:  125:        return NULL; 
+        -:  126:    }
+        1:  127:    Node* top_node = *stack; 
+        1:  128:    *stack = top_node->next;
+        1:  129:    top_node->next = NULL;
+        1:  130:    return top_node;
+        -:  131:}
+        -:  132:
+        -:  133:/*void _destroy_int(void* data) {}
+        -:  134:
+        -:  135:void _destroy_string(void* nod) {
+        -:  136://	printf("here");
+        -:  137:	Node* node = nod;
+        -:  138:    if (node != NULL) {
+        -:  139://        free(node->a_value);
+        -:  140:		free(node);
+        -:  141:    }
+        -:  142:}*/
+        -:  143:
+        -:  144:
+        6:  145:void destroy_list(Node** a_head, void (*destroy_fn)(void*))
+        -:  146:{
+        -:  147://	printf("print");
+        6:  148:    if (a_head == NULL || *a_head == NULL) {
+        1:  149:        return;
+        -:  150:    }
+       5*:  151:	assert(a_head != NULL);
+       5*:  152:	assert(*a_head != NULL);
+        -:  153:
+        5:  154:    Node* current = *a_head;
+        -:  155:    Node* next;
+        -:  156:
+       17:  157:    while (current != NULL) {
+       12:  158:        next = current->next;
+       12:  159:		printf("here2");
+       12:  160:        destroy_fn(current);
+       12:  161:        current = next;
+        -:  162:    }
+        -:  163:
+        5:  164:    *a_head = NULL;
+        -:  165:}
+        -:  166:
+        -:  167:/*void _print_int(const void* data) {
+        -:  168:    printf("%d", *(const int*)data);
+        -:  169:}
+        -:  170:
+        -:  171:void _print_string(const void* data) {
+        -:  172:    printf("%s", (char*)data);
+        -:  173:}*/
+        -:  174:
+        5:  175:void print_list(Node* head, void (*print_fn)(const void*))
+        -:  176:{
+        5:  177:    Node* current = head;
+        -:  178:
+       17:  179:    while (current != NULL) {
+       12:  180:        print_fn(current->a_value);
+       12:  181:        printf("\n");
+       12:  182:        current = current->next;
+        -:  183:    }
+        -:  184://	printf("print here");
+        5:  185:}
+        -:  186:
+        -:  187:

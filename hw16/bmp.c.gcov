@@ -1,0 +1,149 @@
+        -:    0:Source:bmp.c
+        -:    0:Graph:bmp.gcno
+        -:    0:Data:bmp.gcda
+        -:    0:Runs:1
+        -:    0:Programs:1
+        -:    1:#include <errno.h>
+        -:    2:#include <assert.h>
+        -:    3:#include <string.h>
+        -:    4:#include <stdbool.h>
+        -:    5:#include <stdlib.h>
+        -:    6:#include "bmp.h"
+        -:    7:
+        7:    8:bool check_bmp_header(const BMPHeader* bh, FILE* fp) {
+        7:    9:	bool cond = true;
+        7:   10:	int exp_img = ((bh->width_px *  (bh->bits_per_pixel / 8) + 3) & ~3) * bh->height_px;	
+        7:   11:	int exp_file = BMP_HEADER_SIZE + bh->image_size_bytes;
+        7:   12:	if (!(bh->type == 0x4d42) || !(bh->offset == BMP_HEADER_SIZE) || !(bh->dib_header_size == DIB_HEADER_SIZE) || (bh->num_planes != 1) || bh->compression != 0 || bh->num_colors != 0 || bh->important_colors != 0 || bh->bits_per_pixel != 24 ||bh->image_size_bytes != exp_img || exp_file != bh->size)	{
+        5:   13:		cond = false;
+        -:   14:	}
+        -:   15:/*	if (!(bh->offset == BMP_HEADER_SIZE)) {
+        -:   16:		i = 2;
+        -:   17:		cond = false;
+        -:   18:	}
+        -:   19:	if (!(bh->dib_header_size == DIB_HEADER_SIZE)) {
+        -:   20:		i = 3;
+        -:   21:		cond = false;
+        -:   22:	}
+        -:   23:	if (!(bh->num_planes == 1)) {
+        -:   24:		i = 4;
+        -:   25:		cond = false;
+        -:   26:	}
+        -:   27:	if (!(bh->compression == 0)) {
+        -:   28:		i = 5;
+        -:   29:		cond = false;
+        -:   30:	}
+        -:   31:	if ((bh->num_colors != 0) || (bh->important_colors != 0)) {
+        -:   32:		i = 6;
+        -:   33:		cond = false;
+        -:   34:	}
+        -:   35:	if (!(bh->bits_per_pixel == 24)) {
+        -:   36:		i = 7;
+        -:   37:		cond = false;
+        -:   38:	}
+        -:   39:	int cur = ftell(fp);
+        -:   40:	printf("%d  %d  %d\n", bh->width_px, bh->height_px, bh->bits_per_pixel);
+        -:   41:	printf("img = %d\n", bh->image_size_bytes);
+        -:   42:	int exp_img = ((bh->width_px *  (bh->bits_per_pixel / 8) + 3) & ~3) * bh->height_px;
+        -:   43:
+        -:   44:	if (bh->image_size_bytes != exp_img) {
+        -:   45:		i = 7;
+        -:   46:		cond = false;
+        -:   47:	}
+        -:   48:	fseek(fp, 0, SEEK_END);
+        -:   49:	//int len = ftell(fp);
+        -:   50:	fseek(fp, cur, SEEK_SET);
+        -:   51:	int exp_file = BMP_HEADER_SIZE + bh->image_size_bytes;
+        -:   52:	
+        -:   53:	if (exp_file != bh->size) {
+        -:   54:		i = 8;
+        -:   55:		cond = false;
+        -:   56:	}
+        -:   57:
+        -:   58:	printf("%d\n", i);*/
+        -:   59:	
+        7:   60:	return cond;
+        -:   61:}
+        -:   62:
+        7:   63:BMPImage* read_bmp(FILE* fp, const char** a_error) {
+        -:   64:	//printf("in\n");
+        -:   65:	BMPHeader bh;
+        7:   66:	int i = fread(&bh, sizeof(BMPHeader), 1, fp);
+        -:   67:	//printf("read1\n");
+        -:   68:
+       7*:   69:	*a_error = (i == 1 ? NULL : strerror(errno));
+        7:   70:	if (!check_bmp_header(&bh, fp)) {
+        5:   71:        if (*a_error == NULL) {
+        5:   72:			printf("error ho gaya\n");
+        5:   73:			*a_error = "Invalid BMP Image Header";
+        -:   74:		}
+        5:   75:        return NULL;
+        -:   76:    }
+        -:   77://	printf("before read2\n");
+        2:   78:	BMPImage* img = (BMPImage*)malloc(sizeof(BMPImage));
+       2*:   79:	*a_error = (img != NULL ? NULL : strerror(errno));
+        -:   80://	printf("after malloc\n");
+        2:   81:	img->header = bh;
+        2:   82:	img->data = (unsigned char*)malloc(bh.image_size_bytes);
+       2*:   83:	*a_error = (img->data != NULL ? NULL : strerror(errno));
+        2:   84:	i =	fread(img->data, bh.image_size_bytes, 1, fp);
+        -:   85://	printf("after read2\n");
+       2*:   86:	*a_error = (i == 1 ? NULL : strerror(errno));
+        -:   87://	printf("all should work\n");
+        2:   88:	return img;
+        -:   89:}
+        -:   90:
+        3:   91:bool write_bmp(FILE* fp, BMPImage* image, const char** a_error) {
+        3:   92:	if (image == NULL || image->data == NULL) {
+        1:   93:		*a_error = "Invalid BMPImage";
+        1:   94:		return false;
+        -:   95:	}
+        2:   96:	int i = fwrite(&image->header, sizeof(BMPHeader), 1, fp);
+       2*:   97:	*a_error = (i == 1 ? NULL : strerror(errno));
+        -:   98:
+        2:   99:	int j = fwrite(image->data, image->header.image_size_bytes, 1, fp);
+        -:  100:		
+       2*:  101:	*a_error = (j == 1 ? NULL : strerror(errno));
+        2:  102:	return true;
+        -:  103:}
+        -:  104:
+        -:  105:
+       10:  106:void free_bmp(BMPImage* img) {
+       10:  107:	if (img != NULL) {
+        4:  108:		if (img->data != NULL) {
+        4:  109:			free(img->data);
+        -:  110:		}
+        4:  111:		free(img);
+        -:  112:	}
+       10:  113:}
+        -:  114:
+        3:  115:BMPImage* crop_bmp(const BMPImage* image, int x, int y, int w, int h, const char** a_error) {
+        3:  116:	if (image == NULL || image->data == NULL) {
+        1:  117:		*a_error = "img is null";
+        1:  118:		return NULL;
+        -:  119:	}
+        2:  120:	int start = BMP_HEADER_SIZE + (y * image->header.width_px + x) * (image->header.bits_per_pixel / 8);
+        2:  121:	int crop_size = w * h * (image->header.bits_per_pixel / 8);
+        2:  122:	BMPImage* crop_img = (BMPImage*)malloc(sizeof(BMPImage));
+       2*:  123:	*a_error = (crop_img != NULL ? NULL : strerror(errno));
+        2:  124:	crop_img->data = (unsigned char*)malloc(crop_size);
+       2*:  125:	*a_error = (crop_img->data != NULL ? NULL : strerror(errno));
+        2:  126:	crop_img->header = image->header;
+        2:  127:	crop_img->header.width_px = w;
+        2:  128:	crop_img->header.height_px = h;
+        2:  129:	crop_img->header.image_size_bytes = crop_size;
+        2:  130:	crop_img->header.size = BMP_HEADER_SIZE + crop_size;
+        2:  131:	crop_img->header.offset = BMP_HEADER_SIZE;
+        -:  132:
+       10:  133:	for (int i = 0; i < h; i++) {
+       40:  134:		for (int j = 0; j < w; j++) {
+       32:  135:			int soff = start + (i * image->header.width_px + j) * (image->header.bits_per_pixel / 8);
+       32:  136:			int doff = (i * w + j) * (image->header.bits_per_pixel / 8);
+      128:  137:			for (int k = 0; k < (image->header.bits_per_pixel / 8); k++) {
+       96:  138:				crop_img->data[doff + k] = image->data[soff + k];
+        -:  139:			}
+        -:  140:		}
+        -:  141:	}
+        -:  142:
+        2:  143:	return crop_img;
+        -:  144:}
